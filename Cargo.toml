@@ -1,6 +1,6 @@
 [package]
 name = "localgateway-api"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["OpenAPI Generator team and contributors"]
 description = "LocalGateway 本地服务发现与反向代理的管理面。所有写操作需要 POST /gw/session 获得的 bearer token。"
 license = "MIT"
@@ -20,10 +20,8 @@ native-tls = ["reqwest/native-tls"]
 rustls = ["reqwest/rustls"]
 
 # openapi-generator output is not written to satisfy every Clippy style lint.
-# Keep the generated crate in the workspace lint gate without hand-editing the
+# Keep the generated crate in the crate lint gate without hand-editing the
 # generated sources; generate.ps1 appends the same block after each run.
 [lints.clippy]
 needless_return = "allow"
 derivable_impls = "allow"
-
-[workspace]
