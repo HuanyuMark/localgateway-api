@@ -12,13 +12,13 @@ crate.
 This repository root is the crate root: `Cargo.toml` and `src/` live at the top
 level, with no nested workspace or crate directory. Generated API documentation
 lives under `docs/`; openapi-generator bookkeeping lives in
-`.openapi-generator/`. Current version: `0.2.0`.
+`.openapi-generator/`. Current version: `0.2.1`.
 
 ## Usage
 
 ```toml
 [dependencies]
-localgateway-api = { git = "https://github.com/HuanyuMark/localgateway-api", tag = "v0.2.0", default-features = false }
+localgateway-api = { git = "https://github.com/HuanyuMark/localgateway-api", tag = "v0.2.1", default-features = false }
 ```
 
 TLS is disabled by default because the client only talks to the loopback
@@ -28,7 +28,7 @@ gateway; enable the `native-tls` or `rustls` feature when needed.
 
 `localgateway-api` is the base crate of the Rust SDK. `localgateway-sdk` depends
 on it, and `localgateway-provider` depends on `localgateway-sdk`. Both consumers
-reference this crate through GitHub git + tag `v0.2.0`.
+reference this crate through GitHub git + tag `v0.2.1`.
 
 ## Documentation
 
