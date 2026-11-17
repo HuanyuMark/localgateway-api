@@ -1,6 +1,6 @@
 [package]
 name = "localgateway-api"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["OpenAPI Generator team and contributors"]
 description = "LocalGateway 本地服务发现与反向代理的管理面。所有写操作需要 POST /gw/session 获得的 bearer token。"
 license = "MIT"
