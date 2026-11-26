@@ -5,6 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **api_info** | Option<**serde_json::Value**> | provider 的 OpenAPI 文档，可后补。 | [optional]
+**cors** | Option<[**models::CorsConfig**](CorsConfig.md)> | 跨域配置；缺省表示不改写 CORS。 | [optional]
 **notify_url** | Option<**String**> | 端口变更时的定向通知地址。 | [optional]
 **port** | **i32** | provider 监听端口。 |
 **probe** | Option<[**models::ProbeConfig**](ProbeConfig.md)> | 探活配置；`probe.path` 必填。 | [optional]

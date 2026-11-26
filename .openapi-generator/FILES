@@ -5,6 +5,8 @@ Cargo.toml
 README.md
 docs/ApiError.md
 docs/CallerInfo.md
+docs/CorsConfig.md
+docs/CorsResponse.md
 docs/ErrorCode.md
 docs/GatewayApi.md
 docs/GatewayInfo.md
@@ -31,6 +33,8 @@ src/apis/services_api.rs
 src/lib.rs
 src/models/api_error.rs
 src/models/caller_info.rs
+src/models/cors_config.rs
+src/models/cors_response.rs
 src/models/error_code.rs
 src/models/gateway_info.rs
 src/models/health_response.rs

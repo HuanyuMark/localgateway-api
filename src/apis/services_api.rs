@@ -13,6 +13,16 @@ use crate::{apis::ResponseContent, models};
 use reqwest;
 use serde::{de::Error as _, Deserialize, Serialize};
 
+/// struct for typed errors of method [`delete_service_cors`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum DeleteServiceCorsError {
+    Status401(models::ApiError),
+    Status403(models::ApiError),
+    Status404(models::ApiError),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`get_service`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -48,6 +58,17 @@ pub enum PatchServiceError {
     UnknownValue(serde_json::Value),
 }
 
+/// struct for typed errors of method [`put_service_cors`]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum PutServiceCorsError {
+    Status400(models::ApiError),
+    Status401(models::ApiError),
+    Status403(models::ApiError),
+    Status404(models::ApiError),
+    UnknownValue(serde_json::Value),
+}
+
 /// struct for typed errors of method [`register_service`]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -66,6 +87,48 @@ pub enum UnregisterServiceError {
     Status403(models::ApiError),
     Status404(models::ApiError),
     UnknownValue(serde_json::Value),
+}
+
+/// 清空跨域配置，恢复为完全透传 provider 的 CORS 头。幂等：未配置时同样返回 204。
+pub async fn delete_service_cors(
+    configuration: &configuration::Configuration,
+    service_name: &str,
+) -> Result<(), Error<DeleteServiceCorsError>> {
+    // add a prefix to parameters to efficiently prevent name collisions
+    let p_path_service_name = service_name;
+
+    let uri_str = format!(
+        "{}/gw/services/{serviceName}/cors",
+        configuration.base_path,
+        serviceName = crate::apis::urlencode(p_path_service_name)
+    );
+    let mut req_builder = configuration
+        .client
+        .request(reqwest::Method::DELETE, &uri_str);
+
+    if let Some(ref user_agent) = configuration.user_agent {
+        req_builder = req_builder.header(reqwest::header::USER_AGENT, user_agent.clone());
+    }
+    if let Some(ref token) = configuration.bearer_access_token {
+        req_builder = req_builder.bearer_auth(token.to_owned());
+    };
+
+    let req = req_builder.build()?;
+    let resp = configuration.client.execute(req).await?;
+
+    let status = resp.status();
+
+    if !status.is_client_error() && !status.is_server_error() {
+        Ok(())
+    } else {
+        let content = resp.text().await?;
+        let entity: Option<DeleteServiceCorsError> = serde_json::from_str(&content).ok();
+        Err(Error::ResponseError(ResponseContent {
+            status,
+            content,
+            entity,
+        }))
+    }
 }
 
 pub async fn get_service(
@@ -270,6 +333,60 @@ pub async fn patch_service(
     } else {
         let content = resp.text().await?;
         let entity: Option<PatchServiceError> = serde_json::from_str(&content).ok();
+        Err(Error::ResponseError(ResponseContent {
+            status,
+            content,
+            entity,
+        }))
+    }
+}
+
+/// 用整份配置替换该服务的跨域设置。`{\"allowAll\": true}` 即可一键放行所有域； 配置在代理面立即生效，预检由网关直接应答。
+pub async fn put_service_cors(
+    configuration: &configuration::Configuration,
+    service_name: &str,
+    cors_config: models::CorsConfig,
+) -> Result<models::CorsResponse, Error<PutServiceCorsError>> {
+    // add a prefix to parameters to efficiently prevent name collisions
+    let p_path_service_name = service_name;
+    let p_body_cors_config = cors_config;
+
+    let uri_str = format!(
+        "{}/gw/services/{serviceName}/cors",
+        configuration.base_path,
+        serviceName = crate::apis::urlencode(p_path_service_name)
+    );
+    let mut req_builder = configuration.client.request(reqwest::Method::PUT, &uri_str);
+
+    if let Some(ref user_agent) = configuration.user_agent {
+        req_builder = req_builder.header(reqwest::header::USER_AGENT, user_agent.clone());
+    }
+    if let Some(ref token) = configuration.bearer_access_token {
+        req_builder = req_builder.bearer_auth(token.to_owned());
+    };
+    req_builder = req_builder.json(&p_body_cors_config);
+
+    let req = req_builder.build()?;
+    let resp = configuration.client.execute(req).await?;
+
+    let status = resp.status();
+    let content_type = resp
+        .headers()
+        .get("content-type")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("application/octet-stream");
+    let content_type = super::ContentType::from(content_type);
+
+    if !status.is_client_error() && !status.is_server_error() {
+        let content = resp.text().await?;
+        match content_type {
+            ContentType::Json => serde_json::from_str(&content).map_err(Error::from),
+            ContentType::Text => return Err(Error::from(serde_json::Error::custom("Received `text/plain` content type response that cannot be converted to `models::CorsResponse`"))),
+            ContentType::Unsupported(unknown_type) => return Err(Error::from(serde_json::Error::custom(format!("Received `{unknown_type}` content type response that cannot be converted to `models::CorsResponse`")))),
+        }
+    } else {
+        let content = resp.text().await?;
+        let entity: Option<PutServiceCorsError> = serde_json::from_str(&content).ok();
         Err(Error::ResponseError(ResponseContent {
             status,
             content,

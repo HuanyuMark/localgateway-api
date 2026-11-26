@@ -14,6 +14,14 @@ use serde::{Deserialize, Serialize};
 /// ServiceDetail : 服务详情，不含 apiInfo。
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ServiceDetail {
+    /// 跨域配置；未配置时不返回该字段。
+    #[serde(
+        rename = "cors",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub cors: Option<Option<Box<models::CorsConfig>>>,
     /// apiInfo 中声明的路径，排序后返回。
     #[serde(rename = "endpoints")]
     pub endpoints: Vec<String>,
@@ -85,6 +93,7 @@ impl ServiceDetail {
         version: String,
     ) -> ServiceDetail {
         ServiceDetail {
+            cors: None,
             endpoints,
             last_probe: None,
             name,

@@ -22,6 +22,14 @@ pub struct RegisterRequest {
         skip_serializing_if = "Option::is_none"
     )]
     pub api_info: Option<Option<serde_json::Value>>,
+    /// 跨域配置；缺省表示不改写 CORS。
+    #[serde(
+        rename = "cors",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub cors: Option<Option<Box<models::CorsConfig>>>,
     /// 端口变更时的定向通知地址。
     #[serde(
         rename = "notifyUrl",
@@ -62,6 +70,7 @@ impl RegisterRequest {
     pub fn new(port: i32, version: String) -> RegisterRequest {
         RegisterRequest {
             api_info: None,
+            cors: None,
             notify_url: None,
             port,
             probe: None,

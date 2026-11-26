@@ -22,6 +22,14 @@ pub struct PatchRequest {
         skip_serializing_if = "Option::is_none"
     )]
     pub api_info: Option<Option<serde_json::Value>>,
+    /// 新的跨域配置；缺省表示不修改。
+    #[serde(
+        rename = "cors",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub cors: Option<Option<Box<models::CorsConfig>>>,
     /// 新的探活配置。
     #[serde(
         rename = "probe",
@@ -45,6 +53,7 @@ impl PatchRequest {
     pub fn new() -> PatchRequest {
         PatchRequest {
             api_info: None,
+            cors: None,
             probe: None,
             project_root: None,
         }
